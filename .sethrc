@@ -1,0 +1,5 @@
+export ETH_RPC_URL=http://127.0.0.1:8645
+export ETH_KEYSTORE=~/.ethereum/mix/keystore
+export ETH_GAS=3000000
+export ETH_GAS_PRICE=1
+export ETH_FROM=0x414a49512e3b17c08467c77920e9445fc8fd29ad
