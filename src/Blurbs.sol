@@ -31,12 +31,12 @@ contract Blurbs {
     struct Blurb {
         uint8 blurbType;
         address owner;
-        uint donationsReceived;
+        uint256 donationsReceived;
         uint128 timesDonated;
         uint256 createdOn;
     }
 
-    mapping (address => uint) pendingWithdrawals;
+    mapping (address => uint256) pendingWithdrawals;
 
     constructor(ItemStoreRegistry _itemStoreRegistry) public {
         itemStoreRegistry = _itemStoreRegistry;
@@ -88,7 +88,7 @@ contract Blurbs {
 
     function withdraw() public {
         
-        uint _amount = pendingWithdrawals[msg.sender];
+        uint256 _amount = pendingWithdrawals[msg.sender];
         
         pendingWithdrawals[msg.sender] = 0;
         
@@ -98,7 +98,7 @@ contract Blurbs {
 
     }
 
-    function getBlurbInfo(bytes32 _itemId) public view returns (address owner, uint donationsReceived, uint128 timesDonated, uint8 blurbType, uint createdOn) {
+    function getBlurbInfo(bytes32 _itemId) public view returns (address owner, uint256 donationsReceived, uint128 timesDonated, uint8 blurbType, uint256 createdOn) {
         
         Blurb storage _blurb = blurbData[_itemId];
         
@@ -110,11 +110,35 @@ contract Blurbs {
 
     }
 
+    function getAllBlurbs(address addr) public view returns (bytes32[] memory) {
+
+        bytes32[] memory blurbsArray = new bytes32[](blurbCount[addr]);
+
+        for (uint128 i = 0; i < blurbCount[addr]; i++) {
+            blurbsArray[i] = blurbsByAccount[addr][i];
+        }
+
+        return blurbsArray;
+    }
+
+    function getBlurbsByType(address addr, uint8 _blurbType) public view returns (bytes32[] memory) {
+
+        bytes32[] memory blurbsArray = new bytes32[](blurbCount[addr]);
+        uint128 j = 0;
+        for (uint128 i = 0; i < blurbCount[addr]; i++) {
+            if(blurbData[blurbsByAccount[addr][i]].blurbType == _blurbType) {
+                blurbsArray[j] = blurbsByAccount[addr][i];
+                j++;
+            }
+        }
+        return blurbsArray;
+    }
+
     function getBlurbCount(address addr) public view returns (uint128) {
         return blurbCount[addr];
     }
 
-    function getBlurbTotalDonations(bytes32 _itemId) public view returns (uint) {
+    function getBlurbTotalDonations(bytes32 _itemId) public view returns (uint256) {
         return blurbData[_itemId].donationsReceived;
     }
 
@@ -122,7 +146,7 @@ contract Blurbs {
         return blurbData[_itemId].timesDonated;
     }
 
-    function currentBalance (address addr) public view returns (uint) {
+    function currentBalance (address addr) public view returns (uint256) {
         return pendingWithdrawals[addr];
     }
 
@@ -132,6 +156,13 @@ contract Blurbs {
 
     function getBlurbOwner(bytes32 _itemId) public view returns (address) {
         return blurbData[_itemId].owner;
+    }
+    function getTotalDonationsByAddr(address addr) public view returns (uint256) {
+        uint256 _totalReceived;
+        for (uint128 i = 0; i < blurbCount[addr]; i++) {
+            _totalReceived = _totalReceived + blurbData[blurbsByAccount[addr][i]].donationsReceived;
+        }
+        return _totalReceived;
     }
 
 }

@@ -36,8 +36,15 @@ contract BlurbsTest is DSTest {
         
         blurbs.addBlurb(itemId0, 2);
 
+        assertTrue(itemId0 == blurbs.getAllBlurbs(address(this))[0]);
+
         assertTrue(blurbs.getBlurbType(itemId0) == uint8(2));
         assertTrue(blurbs.getBlurbOwner(itemId0) == address(this));
+
+        bytes32 itemId2 = itemStore.create(bytes2(0x0003), hex"1234");
+        blurbs.addBlurb(itemId2, 3);
+        assertTrue(itemId2 == blurbs.getAllBlurbs(address(this))[1]);
+        assertTrue(itemId2 == blurbs.getBlurbsByType(address(this), uint8(3))[0]);
 
     }
 
