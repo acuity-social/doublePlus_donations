@@ -22,9 +22,7 @@ contract Blurbs {
 
     ItemStoreRegistry itemStoreRegistry;
 
-    mapping (address => mapping(uint128 => bytes32)) blurbsByAccount;
-
-    mapping (address => uint128) blurbCount;
+    mapping (address => mapping (uint8 => bytes32[])) blurbsByType;
 
     mapping (bytes32 => Blurb) blurbData;
     
@@ -52,17 +50,13 @@ contract Blurbs {
         //check if items owner is the msg.sender
         require(itemStore.getOwner(_itemId) == msg.sender);
 
-        uint128 _blurbCount = blurbCount[msg.sender];
-
-        blurbsByAccount[msg.sender][_blurbCount] = _itemId;
+        blurbsByType[msg.sender][_blurbType].push(_itemId);
 
         Blurb storage currentBlurb = blurbData[_itemId];
 
         currentBlurb.owner = msg.sender;
         currentBlurb.createdOn = block.timestamp;
         currentBlurb.blurbType = _blurbType;
-        
-        blurbCount[msg.sender] = uint128(_blurbCount + 1);
 
         emit blurbAdded(_itemId, _blurbType, msg.sender);
 
@@ -110,32 +104,8 @@ contract Blurbs {
 
     }
 
-    function getAllBlurbs(address addr) public view returns (bytes32[] memory) {
-
-        bytes32[] memory blurbsArray = new bytes32[](blurbCount[addr]);
-
-        for (uint128 i = 0; i < blurbCount[addr]; i++) {
-            blurbsArray[i] = blurbsByAccount[addr][i];
-        }
-
-        return blurbsArray;
-    }
-
     function getBlurbsByType(address addr, uint8 _blurbType) public view returns (bytes32[] memory) {
-
-        bytes32[] memory blurbsArray = new bytes32[](blurbCount[addr]);
-        uint128 j = 0;
-        for (uint128 i = 0; i < blurbCount[addr]; i++) {
-            if(blurbData[blurbsByAccount[addr][i]].blurbType == _blurbType) {
-                blurbsArray[j] = blurbsByAccount[addr][i];
-                j++;
-            }
-        }
-        return blurbsArray;
-    }
-
-    function getBlurbCount(address addr) public view returns (uint128) {
-        return blurbCount[addr];
+        return blurbsByType[addr][_blurbType];
     }
 
     function getBlurbTotalDonations(bytes32 _itemId) public view returns (uint256) {
@@ -156,13 +126,6 @@ contract Blurbs {
 
     function getBlurbOwner(bytes32 _itemId) public view returns (address) {
         return blurbData[_itemId].owner;
-    }
-    function getTotalDonationsByAddr(address addr) public view returns (uint256) {
-        uint256 _totalReceived;
-        for (uint128 i = 0; i < blurbCount[addr]; i++) {
-            _totalReceived = _totalReceived + blurbData[blurbsByAccount[addr][i]].donationsReceived;
-        }
-        return _totalReceived;
     }
 
 }
